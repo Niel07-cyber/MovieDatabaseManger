@@ -21,7 +21,7 @@ public class GenreDao {
 			 PreparedStatement statement = connection.prepareStatement(sqlStatement);
 			 ResultSet resultSet = statement.executeQuery()) {
 			while (resultSet.next()) {
-				genres.add(new Genre(resultSet.getInt("genre"), resultSet.getString("name")));
+				genres.add(new Genre(resultSet.getInt("idgenre"), resultSet.getString("name")));
 			}
 		} catch (SQLException e) {
 			throw new RuntimeException("Error listing genre into database");
@@ -46,11 +46,11 @@ public class GenreDao {
 		String sqlStatement = "SELECT * FROM genre WHERE name = ?";
 
 		try (Connection connection = DataSourceFactory.getConnection();
-			 PreparedStatement statement = connection.prepareStatement("SELECT * FROM genre WHERE name = ?")) {
+			 PreparedStatement statement = connection.prepareStatement(sqlStatement)) {
 			statement.setString(1, name);
 			try (ResultSet resultSet = statement.executeQuery()) {
 				if (resultSet.next()) {
-                    return new Genre(resultSet.getInt("genre"), resultSet.getString("name"));
+                    return new Genre(resultSet.getInt("idgenre"), resultSet.getString("name"));
 				}
 			}
 		}   catch (SQLException e) {

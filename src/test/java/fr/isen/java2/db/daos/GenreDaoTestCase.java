@@ -15,7 +15,7 @@ import fr.isen.java2.db.entities.Genre;
 
 public class GenreDaoTestCase {
 
-	private GenreDao genreDao = new GenreDao();
+	private final GenreDao genreDao = new GenreDao();
 
 	@BeforeEach
 	public void initDatabase() throws Exception {
