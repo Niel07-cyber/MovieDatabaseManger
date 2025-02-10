@@ -18,7 +18,7 @@ import org.junit.jupiter.api.Test;
 public class MovieDaoTestCase {
 	@BeforeEach
 	public void initDb() throws Exception {
-		Connection connection = DataSourceFactory.getDataSource().getConnection();
+		Connection connection = DataSourceFactory.getConnection();
 		Statement stmt = connection.createStatement();
 		stmt.executeUpdate(
 				"CREATE TABLE IF NOT EXISTS genre (idgenre INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT , name VARCHAR(50) NOT NULL);");
@@ -114,7 +114,7 @@ public class MovieDaoTestCase {
 		assertThat(savedMovie.getSummary()).isEqualTo("A dramatic test movie");
 
 		// Verify in the database that it was persisted
-		try (Connection connection = DataSourceFactory.getDataSource().getConnection();
+		try (Connection connection = DataSourceFactory.getConnection();
 			 PreparedStatement statement = connection.prepareStatement("SELECT * FROM movie WHERE idmovie = ?")) {
 			statement.setInt(1, savedMovie.getId());
 

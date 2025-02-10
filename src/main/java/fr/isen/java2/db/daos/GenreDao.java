@@ -17,7 +17,7 @@ public class GenreDao {
 	public List<Genre> listGenres() {
 		List<Genre> genres = new ArrayList<>();
 		String sqlStatement = "SELECT * FROM genre";
-			 try (Connection connection = DataSourceFactory.getDataSource().getConnection();
+			 try (Connection connection = DataSourceFactory.getConnection();
 			 PreparedStatement statement = connection.prepareStatement(sqlStatement);
 			 ResultSet resultSet = statement.executeQuery()) {
 			while (resultSet.next()) {
@@ -45,7 +45,7 @@ public class GenreDao {
 	public Genre getGenre(String name) {
 		String sqlStatement = "SELECT * FROM genre WHERE name = ?";
 
-		try (Connection connection = DataSourceFactory.getDataSource().getConnection();
+		try (Connection connection = DataSourceFactory.getConnection();
 			 PreparedStatement statement = connection.prepareStatement("SELECT * FROM genre WHERE name = ?")) {
 			statement.setString(1, name);
 			try (ResultSet resultSet = statement.executeQuery()) {
@@ -73,7 +73,7 @@ public class GenreDao {
 
 	public void addGenre(String name) {
 		String sqlStatement = "INSERT INTO genre(name) VALUES(?)";
-		try (Connection connection = DataSourceFactory.getDataSource().getConnection();
+		try (Connection connection = DataSourceFactory.getConnection();
 			 PreparedStatement statement = connection.prepareStatement(sqlStatement, PreparedStatement.RETURN_GENERATED_KEYS)) {
 			statement.setString(1, name);
 			statement.executeUpdate();
