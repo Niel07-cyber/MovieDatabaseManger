@@ -1,6 +1,5 @@
 package fr.isen.java2.db.daos;
 
-import static org.assertj.core.api.Assertions.fail;
 import static org.assertj.core.api.AssertionsForInterfaceTypes.assertThat;
 
 import java.sql.Connection;
