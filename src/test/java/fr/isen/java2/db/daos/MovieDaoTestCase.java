@@ -18,30 +18,64 @@ import org.junit.jupiter.api.Test;
 public class MovieDaoTestCase {
 	@BeforeEach
 	public void initDb() throws Exception {
-		Connection connection = DataSourceFactory.getConnection();
-		Statement stmt = connection.createStatement();
-		stmt.executeUpdate(
-				"CREATE TABLE IF NOT EXISTS genre (idgenre INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT , name VARCHAR(50) NOT NULL);");
-		stmt.executeUpdate(
-				"CREATE TABLE IF NOT EXISTS movie (\r\n"
-				+ "  idmovie INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT,\r\n" + "  title VARCHAR(100) NOT NULL,\r\n"
-				+ "  release_date DATETIME NULL,\r\n" + "  genre_id INT NOT NULL,\r\n" + "  duration INT NULL,\r\n"
-				+ "  director VARCHAR(100) NOT NULL,\r\n" + "  summary MEDIUMTEXT NULL,\r\n"
-				+ "  CONSTRAINT genre_fk FOREIGN KEY (genre_id) REFERENCES genre (idgenre));");
-		stmt.executeUpdate("DELETE FROM movie");
-		stmt.executeUpdate("DELETE FROM genre");
-		stmt.executeUpdate("DELETE FROM sqlite_sequence WHERE name='movie'");
-		stmt.executeUpdate("DELETE FROM sqlite_sequence WHERE name='genre'");
-		stmt.executeUpdate("INSERT INTO genre(idgenre,name) VALUES (1,'Drama')");
-		stmt.executeUpdate("INSERT INTO genre(idgenre,name) VALUES (2,'Comedy')");
-		stmt.executeUpdate("INSERT INTO movie(idmovie,title, release_date, genre_id, duration, director, summary) "
-				+ "VALUES (1, 'Title 1', '2015-11-26 12:00:00.000', 1, 120, 'director 1', 'summary of the first movie')");
-		stmt.executeUpdate("INSERT INTO movie(idmovie,title, release_date, genre_id, duration, director, summary) "
-				+ "VALUES (2, 'My Title 2', '2015-11-14 12:00:00.000', 2, 114, 'director 2', 'summary of the second movie')");
-		stmt.executeUpdate("INSERT INTO movie(idmovie,title, release_date, genre_id, duration, director, summary) "
-				+ "VALUES (3, 'Third title', '2015-12-12 12:00:00.000', 2, 176, 'director 3', 'summary of the third movie')");
-		stmt.close();
-		connection.close();
+		try (Connection connection = DataSourceFactory.getConnection();
+			 Statement stmt = connection.createStatement()) {
+			stmt.executeUpdate(
+					"CREATE TABLE IF NOT EXISTS genre (idgenre INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT, name VARCHAR(50) NOT NULL);");
+			stmt.executeUpdate(
+					"CREATE TABLE IF NOT EXISTS movie ("
+							+ "idmovie INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT, "
+							+ "title VARCHAR(100) NOT NULL, "
+							+ "release_date DATETIME NULL, "
+							+ "genre_id INT NOT NULL, "
+							+ "duration INT NULL, "
+							+ "director VARCHAR(100) NOT NULL, "
+							+ "summary MEDIUMTEXT NULL, "
+							+ "CONSTRAINT genre_fk FOREIGN KEY (genre_id) REFERENCES genre (idgenre));");
+			stmt.executeUpdate("DELETE FROM movie");
+			stmt.executeUpdate("DELETE FROM genre");
+			stmt.executeUpdate("DELETE FROM sqlite_sequence WHERE name='movie'");
+			stmt.executeUpdate("DELETE FROM sqlite_sequence WHERE name='genre'");
+
+			try (PreparedStatement pstmt = connection.prepareStatement("INSERT INTO genre(idgenre,name) VALUES (?,?)")) {
+				pstmt.setInt(1, 1);
+				pstmt.setString(2, "Drama");
+				pstmt.executeUpdate();
+				pstmt.setInt(1, 2);
+				pstmt.setString(2, "Comedy");
+				pstmt.executeUpdate();
+			}
+
+			try (PreparedStatement pstmt = connection.prepareStatement(
+					"INSERT INTO movie(idmovie,title, release_date, genre_id, duration, director, summary) VALUES (?,?,?,?,?,?,?)")) {
+				pstmt.setInt(1, 1);
+				pstmt.setString(2, "Title 1");
+				pstmt.setString(3, "2015-11-26 12:00:00.000");
+				pstmt.setInt(4, 1);
+				pstmt.setInt(5, 120);
+				pstmt.setString(6, "director 1");
+				pstmt.setString(7, "summary of the first movie");
+				pstmt.executeUpdate();
+
+				pstmt.setInt(1, 2);
+				pstmt.setString(2, "My Title 2");
+				pstmt.setString(3, "2015-11-14 12:00:00.000");
+				pstmt.setInt(4, 2);
+				pstmt.setInt(5, 114);
+				pstmt.setString(6, "director 2");
+				pstmt.setString(7, "summary of the second movie");
+				pstmt.executeUpdate();
+
+				pstmt.setInt(1, 3);
+				pstmt.setString(2, "Third title");
+				pstmt.setString(3, "2015-12-12 12:00:00.000");
+				pstmt.setInt(4, 2);
+				pstmt.setInt(5, 176);
+				pstmt.setString(6, "director 3");
+				pstmt.setString(7, "summary of the third movie");
+				pstmt.executeUpdate();
+			}
+		}
 	}
 
 	@Test
@@ -65,8 +99,6 @@ public class MovieDaoTestCase {
 				.contains("director 1", "director 2", "director 3");
 	}
 
-
-
 	@Test
 	public void shouldListMoviesByGenre() {
 		// Arrange: Set up MovieDao instance
@@ -86,11 +118,6 @@ public class MovieDaoTestCase {
 		assertThat(movies)
 				.allSatisfy(movie -> assertThat(movie.getGenre().getName()).isEqualTo("Comedy"));
 	}
-
-
-
-
-
 
 	@Test
 	public void shouldAddMovie() throws Exception {
